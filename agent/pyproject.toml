@@ -12,13 +12,10 @@ dependencies = [
     "ag-ui-protocol (>=0.1.7,<0.2.0)",
     "fastapi (>=0.115.14,<0.116.0)",
     "uvicorn (>=0.35.0,<0.36.0)",
-    "langchain-gemini (>=0.1.1,<0.2.0)",
     "yfinance (>=0.2.64,<0.3.0)",
-    "langchain-openai (>=0.3.27,<0.4.0)",
     "dotenv (>=0.9.9,<0.10.0)",
     "pandas (>=2.3.0,<3.0.0)",
-    "langchain[google-genai] (>=0.3.26,<0.4.0)",
-    "lxml (>=6.0.0,<7.0.0)"
+    "crewai (>=0.140.0,<0.141.0)",
 ]
 
 [tool.poetry]

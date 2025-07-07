@@ -149,7 +149,7 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-col bg-indigo-50">
       {/* App Header - full width, topmost */}
-      <header className="w-full bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 border-indigo-600 py-3 px-8 flex items-center opacity-90">
+      <header className="w-full bg-gradient-to-r from-[#FF003C] to-[#C8002A] py-3 px-8 flex items-center opacity-90">
         <h1 className="text-xl font-semibold text-gray-300 tracking-tight">AI Stock Analyst</h1>
       </header>
       <div className="flex-1 flex flex-col lg:flex-row" style={{ height: "90vh" }}>
