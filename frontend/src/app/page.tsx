@@ -46,14 +46,16 @@ export default function Home() {
       }
     ],
     renderAndWaitForResponse: ({ args, respond, status }) => {
-      console.log(status, "barargs");
+      useEffect(() => {
+        console.log(args, "barargs");
+      }, [args])
       const [updated, setUpdated] = useState(false);
       return <>
         {/* @ts-ignore */}
         <CustomBarChart data={args?.data} barLabel={args?.topic} />
         <button hidden={updated} className="mt-2 mr-2 bg-indigo-500 text-white px-4 py-1 rounded-xl hover:bg-indigo-600 transition-all duration-300 cursor-pointer" onClick={() => {
           debugger
-          respond?.("accepted")
+          respond?.("The Chart is approved")
           setUpdated(true)
           setBarChartData({ date: new Date().toLocaleTimeString(), data: args?.data || [] })
           setBarChartTopic(args?.topic || "")
@@ -126,13 +128,13 @@ export default function Home() {
     // }
   })
 
-  useCoAgentStateRender({
-    name: "langgraphAgent",
-    render: ({ state, status, nodeName }) => {
-      console.log(state, status, nodeName, "state");
-      return (state.items.length > 0 ? <ToolLog state={state.items} /> : status === "inProgress" ? <DotLoader /> : <></>)
-    }
-  })
+  // useCoAgentStateRender({
+  //   name: "langgraphAgent",
+  //   render: ({ state, status, nodeName }) => {
+  //     console.log(state, status, nodeName, "state");
+  //     return (state.items.length > 0 ? <ToolLog state={state.items} /> : status === "inProgress" ? <DotLoader /> : <></>)
+  //   }
+  // })
 
 
   useCopilotChatSuggestions({
@@ -160,7 +162,7 @@ export default function Home() {
               ((barChartData.data.length > 0) && (tableData.rows.length > 0)) ? (
               <>
                 {/* {Bar Chart data} */}
-                {barChartTopic && <div className="bg-white rounded-xl shadow p-6 border-t-4 border-indigo-500">
+                {barChartTopic && <div className="bg-white rounded-xl shadow p-6 border-t-4 border-red-500">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xl font-semibold text-black">{barChartTopic}</span>
                   </div>
@@ -169,7 +171,7 @@ export default function Home() {
                 </div>}
 
                 {/* {Table data} */}
-                {tableTopic && <div className="bg-white rounded-xl shadow p-6 border-t-4 border-indigo-500">
+                {tableTopic && <div className="bg-white rounded-xl shadow p-6 border-t-4 border-red-500">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xl font-semibold text-black">{tableTopic}</span>
                   </div>
