@@ -1,21 +1,9 @@
 from crewai.flow.flow import Flow, start, listen
 from crewai import LLM, Agent
 from typing import Callable, Any
-from ag_ui.core import (
-    RunAgentInput,
-    StateDeltaEvent,
-    Message,
-    StateSnapshotEvent,
-    EventType,
-    RunStartedEvent,
-    RunFinishedEvent,
-    TextMessageStartEvent,
-    TextMessageEndEvent,
-    TextMessageContentEvent,
-    ToolCallStartEvent,
-    ToolCallEndEvent,
-    ToolCallArgsEvent,
-)
+
+# from ag_ui.core import (
+# )
 from ag_ui.core.types import AssistantMessage, ToolMessage
 from litellm import completion
 from dotenv import load_dotenv
@@ -197,16 +185,17 @@ model = LLM(
     model="gemini/gemini-2.0-flash",
     temperature=0.7,
     api_key=os.getenv("GOOGLE_API_KEY"),
+    additional_kwargs={"response_format": "json"},
 )
 print(os.getenv("GOOGLE_API_KEY"), "api key")
-stock_agent = Agent(
-    role="Stock Analyst",
-    backstory="You are a stock analyst who uses the tools to get the stock price and revenue data of the given tickers",
-    goal="Use the tools to get the stock price and revenue data of the given tickers",
-    llm=model,
-    tools=[get_stock_price_tool, get_revenue_data_tool],
-    verbose=True,
-)
+# stock_agent = Agent(
+#     role="Stock Analyst",
+#     backstory="You are a stock analyst who uses the tools to get the stock price and revenue data of the given tickers",
+#     goal="Use the tools to get the stock price and revenue data of the given tickers",
+#     llm=model,
+#     tools=[get_stock_price_tool, get_revenue_data_tool],
+#     verbose=True,
+# )
 
 
 def convert_tool_call(tool_call: dict):
@@ -245,18 +234,20 @@ class StockAnalysisFlow(Flow):
         messages = []
         for msg in msgs:
             if msg.role == "assistant":
-                if len(msg.tool_calls) > 0:
-                    msg.tool_calls = json.dumps(
-                        [tool_call.dict() for tool_call in msg.tool_calls]
-                    )
+                if(msg.tool_calls is not None):
+                    if len(msg.tool_calls) > 0:
+                        msg.id = str(uuid.uuid4())
+                        msg.tool_calls = [tool_call.dict() for tool_call in msg.tool_calls]
+                    
             if hasattr(msg, "name") and msg.name is None:
                 msg.name = ""
             if hasattr(msg, "content") and msg.content is None:
                 msg.content = ""
-            if(msg.role == 'tool'):
-                continue
-            
+            # if(msg.role == 'tool'):
+            #     del msg.id
+
             messages.append(msg.dict())
+
         chat_agent = Agent(
             role="Chat Agent",
             backstory="You are an amazing assistant who can answer any questions which is posed by the user. You will be given a list of messages and you will have to answer the question based on the messages context. The messages will be in the form of a conversation between the user and the AI assistant.",
@@ -264,40 +255,77 @@ class StockAnalysisFlow(Flow):
             llm=model,
             verbose=True,
         )
-        chat_agent_result = chat_agent.kickoff(messages=messages)
-        chat = model.call(messages=messages)
+        # chat_agent_result = chat_agent.kickoff(messages=messages)
+        # chat = model.call(messages=messages)
         stock_agent = Agent(
             role="Stock Analyst",
             backstory="You are a stock analyst who uses the tools to get the stock price and revenue data of the given tickers",
-            goal='The output response should be STRICTLY IN THIS JSON FORMAT and should contain only the tool_calls that has "render" in the tool name : {"tool_calls" : [{"tool_name": "render_bar_chart","tool_arguments": {"topic": "Amazon Revenue (Last 4 Years)","data": [{"x": "2021","y": 469822000000},{"x": "2022","y": 513983000000}]}}], "data" : "This is the response from the agent"}. If the output is not related to stock analysis then the tool_calls should be empty array and the data should be the response from the agent.',
+            goal="""
+            Your response MUST be a single, valid JSON object with the following format:
+
+                {
+                "tool_calls": [
+                    {
+                    "tool_name": "render_bar_chart",
+                    "tool_arguments": {
+                        "topic": "Amazon Revenue (Last 4 Years)",
+                        "data": [{"x": "2021", "y": 469822000000}, ...]
+                    }
+                    }
+                ],
+                "data": "Explanation or commentary here"
+                }
+
+                Any deviation from this format will result in a system error.
+                Do not use markdown. Do not add extra text. Just return valid JSON.
+            """,
             llm=model,
             tools=[get_stock_price_tool, get_revenue_data_tool, render_bar_chart],
             verbose=True,
         )
-        agent_result = stock_agent.kickoff(messages=messages)
-        if agent_result.raw.startswith("```json"):
-            agent_result.raw = agent_result.raw.replace("```json", "").replace(
-                "```", ""
-            )
-            agent_result.raw = json.loads(agent_result.raw)
-            print(agent_result.raw)
-            # return agent_result
-        else:
-            agent_result.raw = json.loads(agent_result.raw)
-        if len(agent_result.raw["tool_calls"]) > 0:
-            tool_calls = [
-                convert_tool_call(tool_call)
-                for tool_call in agent_result.raw["tool_calls"]
-            ]
-            self.messages.append(
-                AssistantMessage(
-                    role="assistant",
-                    content="",
-                    tool_calls=tool_calls,
-                    id=str(uuid.uuid4()),
+        if messages[-1]['role'] == "tool":
+            try:
+                response = completion(
+                    model="gemini/gemini-2.0-flash",  # Note the format: "gemini/<model-name>"
+                    messages=messages,
+                    api_key=os.getenv("GOOGLE_API_KEY"),
                 )
-            )
-        print(agent_result.raw["tool_calls"])
+                print(response)
+                self.messages.append(
+                    AssistantMessage(
+                        role="assistant",
+                        content=response.choices[0].message.content,
+                        id=str(uuid.uuid4()),
+                    )
+                )
+            except Exception as e:
+                print(e)
+        else:  
+            agent_result = stock_agent.kickoff(messages=messages)
+
+            if agent_result.raw.startswith("```json"):
+                agent_result.raw = agent_result.raw.replace("```json", "").replace(
+                    "```", ""
+                )
+                agent_result.raw = json.loads(agent_result.raw)
+                print(agent_result.raw)
+                # return agent_result
+            else:
+                agent_result.raw = json.loads(agent_result.raw)
+            if len(agent_result.raw["tool_calls"]) > 0:
+                tool_calls = [
+                    convert_tool_call(tool_call)
+                    for tool_call in agent_result.raw["tool_calls"]
+                ]
+                self.messages.append(
+                    AssistantMessage(
+                        role="assistant",
+                        content="",
+                        tool_calls=tool_calls,
+                        id=str(uuid.uuid4()),
+                    )
+                )
+            print(agent_result.raw["tool_calls"])
         return "done"
 
     @listen(chat)

@@ -67,9 +67,9 @@ async def crewai_agent(input_data: RunAgentInput):
             frontend_tools=input_data.tools,
         )
         agent_output = await flow.kickoff_async()
-        print(json.dumps(agent_output[-1].tool_calls[0].function.arguments),"agent output")
+        # print(json.dumps(agent_output[-1].tool_calls[0].function.arguments),"agent output")
         if agent_output[-1].role == "assistant":
-            if len(agent_output[-1].tool_calls) > 0:
+            if agent_output[-1].tool_calls is not None:
                 py_dict = ast.literal_eval(agent_output[-1].tool_calls[0].function.arguments)  # Safely convert string to dict
                 json_args = json.dumps(py_dict)
                 yield encoder.encode(
@@ -94,6 +94,26 @@ async def crewai_agent(input_data: RunAgentInput):
                         tool_call_id=agent_output[-1].tool_calls[0].id,
                     )
                 )
+            else:
+                yield encoder.encode(
+                        TextMessageStartEvent(
+                            type=EventType.TEXT_MESSAGE_START,
+                            message_id=message_id,
+                            role= "assistant"
+                        )
+                    )
+                    
+                yield encoder.encode(
+                    TextMessageContentEvent(
+                    type=EventType.TEXT_MESSAGE_CONTENT,
+                    message_id=message_id,
+                    delta=agent_output[-1].content
+                ))
+                yield encoder.encode(
+                    TextMessageEndEvent(
+                    type=EventType.TEXT_MESSAGE_END,
+                    message_id=message_id,
+                ))
 
         yield encoder.encode(
             RunFinishedEvent(
