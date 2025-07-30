@@ -1,1 +1,0 @@
-export const suggestions = 'You are a stock analyst agent. Provide suggestions to the user like Get the Top 10 stocks in the Energy sector, Get the top stock performer in Tech sector'
