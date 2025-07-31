@@ -40,7 +40,7 @@ export function PromptPanel({ availableCash }: PromptPanelProps) {
         <p className="text-xs text-[#575758]">Interact with the CrewAI-powered AI agent for portfolio visualization and analysis</p>
 
         {/* Available Cash Display */}
-        <div className="mt-3 p-2 bg-[#86ECE4]/10 rounded-lg">
+        <div className="mt-3 p-2 bg-[#FF003C]/10 rounded-lg">
           <div className="text-xs text-[#575758] font-medium">Available Cash</div>
           <div className="text-sm font-semibold text-[#030507] font-['Roobert']">{formatCurrency(availableCash)}</div>
         </div>

@@ -56,7 +56,7 @@ export function CashPanel({ totalCash, investedAmount, currentPortfolioValue, on
       <div className="flex items-center gap-6">
         {/* Total Cash */}
         <div className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-[#86ECE4] rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-[#FF003C] rounded-full flex items-center justify-center">
             <Wallet size={16} className="text-[#030507]" />
           </div>
           <div>
@@ -70,7 +70,7 @@ export function CashPanel({ totalCash, investedAmount, currentPortfolioValue, on
                   className="w-12 text-sm font-semibold text-[#030507] font-['Roobert']"
                   onKeyDown={(e) => e.key === "Enter" && handleSave()}
                 />
-                <button onClick={handleSave} className="p-1 text-[#1B606F] hover:bg-[#86ECE4]/20 rounded">
+                <button onClick={handleSave} className="p-1 text-[#1B606F] hover:bg-[#FF003C]/20 rounded">
                   <Check size={12} />
                 </button>
                 <button onClick={handleCancel} className="p-1 text-[#575758] hover:bg-[#F0F0F4] rounded">
@@ -123,7 +123,7 @@ export function CashPanel({ totalCash, investedAmount, currentPortfolioValue, on
         <div className="flex items-center gap-2">
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              fourYearReturn >= 0 ? "bg-[#86ECE4]" : "bg-red-100"
+              fourYearReturn >= 0 ? "bg-[#FF003C]" : "bg-red-100"
             }`}
           >
             <Calendar size={16} className={fourYearReturn >= 0 ? "text-[#030507]" : "text-red-600"} />
@@ -173,7 +173,7 @@ export function CashPanel({ totalCash, investedAmount, currentPortfolioValue, on
         </div>
         <div className="w-20 h-2 bg-[#E8E8EF] rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#86ECE4] to-[#BEC9FF] transition-all duration-300"
+            className="h-full bg-gradient-to-r from-[#FF003C] to-[#BEC9FF] transition-all duration-300"
             style={{ width: `${Math.min(investedPercentage, 100)}%` }}
           />
         </div>
