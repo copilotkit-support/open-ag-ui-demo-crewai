@@ -85,6 +85,7 @@ async def crewai_agent(input_data: RunAgentInput):
                 StockAnalysisFlow().kickoff_async(inputs={
                     "state" : state,
                     "emit_event" : emit_event,
+                    "investment_portfolio":input_data.state["investment_portfolio"]
                 })
             )
             while True:

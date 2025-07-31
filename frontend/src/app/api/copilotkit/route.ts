@@ -1,8 +1,7 @@
 import {
   CopilotRuntime,
   copilotRuntimeNextJSAppRouterEndpoint,
-  OpenAIAdapter,
-  GoogleGenerativeAIAdapter
+  OpenAIAdapter
 } from '@copilotkit/runtime';
 import { NextRequest } from 'next/server';
 import { HttpAgent } from "@ag-ui/client";
@@ -12,7 +11,7 @@ const crewaiAgent = new HttpAgent({
   url: "http://0.0.0.0:8000/crewai-agent",
   // url: process.env.NEXT_PUBLIC_LANGGRAPH_URL || "http://0.0.0.0:8000/langgraph-agent",
 });
-const serviceAdapter = new GoogleGenerativeAIAdapter()
+const serviceAdapter = new OpenAIAdapter()
 const runtime = new CopilotRuntime({
   agents: {
     // @ts-ignore

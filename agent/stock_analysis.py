@@ -127,7 +127,9 @@ generate_insights = {
 class StockAnalysisFlow(Flow):
     @start()
     def start(self):
-        self.state['state']["messages"][0].content = system_prompt
+        self.state['state']["messages"][0].content = system_prompt.replace(
+            "{PORTFOLIO_DATA_PLACEHOLDER}", json.dumps(self.state["investment_portfolio"])
+        )
         return self.state
 
     @listen("start")
@@ -160,7 +162,7 @@ class StockAnalysisFlow(Flow):
             await asyncio.sleep(0)
             model = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
             response = model.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4.1-mini",
                 messages= self.state['state']['messages'],
                 tools= [extract_relevant_data_from_user_prompt]
             )
@@ -208,6 +210,8 @@ class StockAnalysisFlow(Flow):
     @listen("chat")
     async def simulation(self):
         # Add simulation logic here
+        if self.state['state']['messages'][-1].tool_calls is None:
+            return "end"
         tool_log_id = str(uuid.uuid4())
         self.state['state']["tool_logs"].append(
             {
@@ -296,6 +300,8 @@ class StockAnalysisFlow(Flow):
     
     @listen("simulation")
     async def allocation(self):
+        if self.state['state']['messages'][-1].tool_calls is None:
+            return "end"
         tool_log_id = str(uuid.uuid4())
         self.state['state']["tool_logs"].append(
             {
@@ -313,7 +319,7 @@ class StockAnalysisFlow(Flow):
                         "op": "add",
                         "path": "/tool_logs/-",
                         "value": {
-                            "message": "Analyzing user query",
+                            "message": "Allocating cash",
                             "status": "processing",
                             "id": tool_log_id,
                         },
@@ -614,6 +620,8 @@ class StockAnalysisFlow(Flow):
     @listen("allocation")
     async def insights(self):
         # Add insights logic here
+        if self.state['state']['messages'][-1].tool_calls is None:
+            return "end"
         tool_log_id = str(uuid.uuid4())
         self.state['state']["tool_logs"].append(
             {
